@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#0F1B2D] flex">
+    <div className="h-screen bg-[#0F1B2D] flex overflow-hidden">
       {/* Panel izquierdo — branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden">
         {/* Gradiente de fondo */}
@@ -62,8 +62,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Panel derecho — formulario */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-white lg:rounded-l-3xl">
-        <div className="w-full max-w-md">
+      <div className="flex-1 overflow-y-auto flex items-start lg:items-center justify-center p-6 lg:p-12 bg-white lg:rounded-l-3xl">
+        <div className="w-full max-w-md py-4">
           {/* Logo mobile */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <div className="w-8 h-8 rounded-lg bg-[#06B6D4] flex items-center justify-center">

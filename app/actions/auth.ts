@@ -160,6 +160,13 @@ export async function registerFfAction(formData: FormData) {
     metadata:       { company: parsed.data.company_name, country: parsed.data.company_country },
   })
 
+  // Iniciar sesión automáticamente para que el middleware no bloquee /pending
+  const supabase = await createClient()
+  await supabase.auth.signInWithPassword({
+    email:    parsed.data.email,
+    password: parsed.data.password,
+  })
+
   redirect('/pending')
 }
 
@@ -248,6 +255,13 @@ export async function registerCarrierAction(formData: FormData) {
     entityType:     'user',
     entityId:       userId,
     metadata:       { country: parsed.data.country },
+  })
+
+  // Iniciar sesión automáticamente para que el middleware no bloquee /pending
+  const supabase = await createClient()
+  await supabase.auth.signInWithPassword({
+    email:    parsed.data.email,
+    password: parsed.data.password,
   })
 
   redirect('/pending')
