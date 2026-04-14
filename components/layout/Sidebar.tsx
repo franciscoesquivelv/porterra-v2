@@ -48,7 +48,7 @@ const NAV_ADMIN: NavSection[] = [
     section: 'Usuarios',
     items: [
       { label: 'Gestión de usuarios', href: '/admin/usuarios', icon: Users },
-      { label: 'Aprobaciones KYC', href: '/admin/kyc', icon: ShieldCheck, badge: 'nuevo' },
+      { label: 'Aprobaciones KYC', href: '/admin/kyc', icon: ShieldCheck },
     ],
   },
   {
