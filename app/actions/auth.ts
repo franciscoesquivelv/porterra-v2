@@ -73,10 +73,19 @@ export async function loginAction(formData: FormData) {
 // ─── REGISTER FF ──────────────────────────────────────────────────────────────
 
 export async function registerFfAction(formData: FormData) {
-  const parsed = RegisterFfSchema.safeParse(Object.fromEntries(formData))
+  const raw = Object.fromEntries(formData)
+  const parsed = RegisterFfSchema.safeParse(raw)
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0]?.toString()
+      if (field && !fieldErrors[field]) fieldErrors[field] = issue.message
+    }
+    // Devolver campos (sin contraseña) para preservar lo ingresado
+    const { password, confirmPassword, ...safeFields } = raw as Record<string, string>
+    void password; void confirmPassword
+    return { error: '', fieldErrors, fields: safeFields }
   }
 
   const admin       = getAdminClient()
@@ -97,9 +106,9 @@ export async function registerFfAction(formData: FormData) {
 
   if (authError || !authData.user) {
     if (authError?.message?.includes('already registered')) {
-      return { error: 'Este email ya está registrado' }
+      return { error: '', fieldErrors: { email: 'Este email ya está registrado' }, fields: {} }
     }
-    return { error: 'Error al crear la cuenta. Intenta de nuevo.' }
+    return { error: 'Error al crear la cuenta. Intenta de nuevo.', fieldErrors: {}, fields: {} }
   }
 
   const userId = authData.user.id
@@ -118,7 +127,7 @@ export async function registerFfAction(formData: FormData) {
 
   if (ffError || !ffProfile) {
     await admin.auth.admin.deleteUser(userId)
-    return { error: 'Error al crear el perfil. Intenta de nuevo.' }
+    return { error: 'Error al crear el perfil. Intenta de nuevo.', fieldErrors: {}, fields: {} }
   }
 
   const { error: profileError } = await db()
@@ -138,7 +147,7 @@ export async function registerFfAction(formData: FormData) {
 
   if (profileError) {
     await admin.auth.admin.deleteUser(userId)
-    return { error: 'Error al crear el perfil. Intenta de nuevo.' }
+    return { error: 'Error al crear el perfil. Intenta de nuevo.', fieldErrors: {}, fields: {} }
   }
 
   await admin.auth.admin.updateUserById(userId, {
@@ -173,10 +182,18 @@ export async function registerFfAction(formData: FormData) {
 // ─── REGISTER CARRIER ─────────────────────────────────────────────────────────
 
 export async function registerCarrierAction(formData: FormData) {
-  const parsed = RegisterCarrierSchema.safeParse(Object.fromEntries(formData))
+  const raw = Object.fromEntries(formData)
+  const parsed = RegisterCarrierSchema.safeParse(raw)
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos' }
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0]?.toString()
+      if (field && !fieldErrors[field]) fieldErrors[field] = issue.message
+    }
+    const { password, confirmPassword, ...safeFields } = raw as Record<string, string>
+    void password; void confirmPassword
+    return { error: '', fieldErrors, fields: safeFields }
   }
 
   const admin       = getAdminClient()
@@ -197,9 +214,9 @@ export async function registerCarrierAction(formData: FormData) {
 
   if (authError || !authData.user) {
     if (authError?.message?.includes('already registered')) {
-      return { error: 'Este email ya está registrado' }
+      return { error: '', fieldErrors: { email: 'Este email ya está registrado' }, fields: {} }
     }
-    return { error: 'Error al crear la cuenta. Intenta de nuevo.' }
+    return { error: 'Error al crear la cuenta. Intenta de nuevo.', fieldErrors: {}, fields: {} }
   }
 
   const userId = authData.user.id
@@ -218,7 +235,7 @@ export async function registerCarrierAction(formData: FormData) {
 
   if (carrierError || !carrierProfile) {
     await admin.auth.admin.deleteUser(userId)
-    return { error: 'Error al crear el perfil. Intenta de nuevo.' }
+    return { error: 'Error al crear el perfil. Intenta de nuevo.', fieldErrors: {}, fields: {} }
   }
 
   const { error: profileError } = await db()
@@ -235,7 +252,7 @@ export async function registerCarrierAction(formData: FormData) {
 
   if (profileError) {
     await admin.auth.admin.deleteUser(userId)
-    return { error: 'Error al crear el perfil. Intenta de nuevo.' }
+    return { error: 'Error al crear el perfil. Intenta de nuevo.', fieldErrors: {}, fields: {} }
   }
 
   await admin.auth.admin.updateUserById(userId, {
