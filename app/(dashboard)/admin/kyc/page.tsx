@@ -54,6 +54,12 @@ export default async function AdminKycPage() {
     .neq('porterra_role', 'admin')
     .order('created_at', { ascending: false }) as { data: ProfileRow[] | null }
 
+  // Obtener emails de auth.users
+  const adminClient = getAdminClient()
+  const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers({ perPage: 1000 })
+  const emailMap: Record<string, string> = {}
+  for (const u of authUsers ?? []) emailMap[u.id] = u.email ?? ''
+
   const allProfiles     = profiles ?? []
   const pendingKyc      = allProfiles.filter(p => p.kyc_status === 'submitted')
   const approvedKyc     = allProfiles.filter(p => p.kyc_status === 'approved')
@@ -130,6 +136,9 @@ export default async function AdminKycPage() {
                     <TableRow key={profile.id} className="hover:bg-slate-50/40">
                       <TableCell className="py-3">
                         <p className="text-sm font-medium text-[#1A1A2E]">{profile.pii_full_name}</p>
+                        {emailMap[profile.user_id] && (
+                          <p className="text-xs text-[#06B6D4] mt-0.5">{emailMap[profile.user_id]}</p>
+                        )}
                         {profile.pii_phone && (
                           <p className="text-xs text-slate-400 mt-0.5">{profile.pii_phone}</p>
                         )}
