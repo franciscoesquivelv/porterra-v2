@@ -71,3 +71,57 @@ export async function updateUserStatusAction(
 
   return {}
 }
+
+// ─── UPDATE KYC STATUS ────────────────────────────────────────────────────────
+
+type KycAction = 'approved' | 'rejected'
+
+export async function updateKycStatusAction(
+  targetUserId: string,
+  newKycStatus: KycAction,
+  notes?: string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+  if (user.app_metadata?.porterra_role !== 'admin') return { error: 'Sin permisos' }
+
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for') ?? 'unknown'
+  const ua = headersList.get('user-agent') ?? 'unknown'
+
+  const { error } = await db()
+    .from('profiles')
+    .update({
+      kyc_status: newKycStatus,
+      metadata: db().rpc ? undefined : undefined, // handled below
+    })
+    .eq('user_id', targetUserId)
+
+  if (error) return { error: 'Error al actualizar KYC' }
+
+  // Guardar notas en metadata si las hay
+  if (notes) {
+    await db()
+      .from('profiles')
+      .update({ metadata: { kyc_notes: notes, kyc_reviewed_by: user.id, kyc_reviewed_at: new Date().toISOString() } })
+      .eq('user_id', targetUserId)
+  }
+
+  await logAuditEvent({
+    actorUserId:    user.id,
+    actorRole:      'admin',
+    actorIp:        ip,
+    actorUserAgent: ua,
+    eventType:      newKycStatus === 'approved' ? 'user.kyc.approved' : 'user.kyc.rejected',
+    entityType:     'user',
+    entityId:       targetUserId,
+    metadata:       { kyc_status: newKycStatus, notes },
+  })
+
+  revalidatePath('/admin/kyc')
+  revalidatePath('/admin/usuarios')
+  revalidatePath('/admin')
+
+  return {}
+}
