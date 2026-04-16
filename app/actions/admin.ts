@@ -125,3 +125,41 @@ export async function updateKycStatusAction(
 
   return {}
 }
+
+// ─── UPDATE PLATFORM CONFIG ───────────────────────────────────────────────────
+
+export async function updateConfigAction(
+  key: string,
+  value: string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+  if (user.app_metadata?.porterra_role !== 'admin') return { error: 'Sin permisos' }
+
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for') ?? 'unknown'
+  const ua = headersList.get('user-agent') ?? 'unknown'
+
+  const { error } = await db()
+    .from('platform_config')
+    .update({ value, updated_at: new Date().toISOString() })
+    .eq('key', key)
+
+  if (error) return { error: 'Error al guardar configuración' }
+
+  await logAuditEvent({
+    actorUserId:    user.id,
+    actorRole:      'admin',
+    actorIp:        ip,
+    actorUserAgent: ua,
+    eventType:      'admin.config.changed',
+    entityType:     'platform_config',
+    entityId:       key,
+    metadata:       { key, value },
+  })
+
+  revalidatePath('/admin/configuracion')
+
+  return {}
+}
