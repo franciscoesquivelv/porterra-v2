@@ -8,19 +8,20 @@ import { TrendingUp, DollarSign, Receipt, Clock, ArrowUpRight } from 'lucide-rea
 
 export const dynamic = 'force-dynamic'
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   draft:       { label: 'Borrador',    className: 'bg-slate-100 text-slate-500' },
+  published:   { label: 'Publicada',   className: 'bg-violet-100 text-violet-700 border-violet-200' },
   confirmed:   { label: 'Confirmada',  className: 'bg-blue-100 text-blue-700 border-blue-200' },
   in_transit:  { label: 'En tránsito', className: 'bg-amber-100 text-amber-700 border-amber-200' },
   delivered:   { label: 'Entregada',   className: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
   completed:   { label: 'Completada',  className: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
   cancelled:   { label: 'Cancelada',   className: 'bg-red-100 text-red-700 border-red-200' },
-} as const
+}
 
 interface TxRow {
   id: string
   reference_number: string | null
-  status: keyof typeof STATUS_CONFIG
+  status: string
   total_amount_usd: number
   porterra_fee_usd: number | null
   carrier_payout_usd: number | null
