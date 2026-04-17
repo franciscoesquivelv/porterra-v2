@@ -133,8 +133,16 @@ export default async function FfTransaccionesPage() {
                   const cfg = STATUS_CONFIG[t.status as keyof typeof STATUS_CONFIG]
                   return (
                     <TableRow key={t.id} className="hover:bg-slate-50/40 cursor-pointer">
-                      <TableCell className="font-mono text-xs text-slate-500">{t.reference_number ?? '—'}</TableCell>
-                      <TableCell className="text-sm font-medium text-[#1A1A2E] max-w-[200px] truncate">{t.cargo_description}</TableCell>
+                      <TableCell className="font-mono text-xs text-slate-500">
+                        <Link href={`/ff/transacciones/${t.id}`} className="hover:text-[#06B6D4] transition-colors">
+                          {t.reference_number ?? '—'}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/ff/transacciones/${t.id}`} className="text-sm font-medium text-[#1A1A2E] max-w-[200px] truncate block hover:text-[#06B6D4] transition-colors">
+                          {t.cargo_description}
+                        </Link>
+                      </TableCell>
                       <TableCell className="text-sm text-slate-500">
                         {COUNTRY_LABEL[t.origin_country] ?? t.origin_country} → {COUNTRY_LABEL[t.destination_country] ?? t.destination_country}
                       </TableCell>

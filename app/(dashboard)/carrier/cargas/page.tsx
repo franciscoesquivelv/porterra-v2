@@ -4,6 +4,7 @@ import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Package, Truck, CheckCircle, Clock } from 'lucide-react'
+import { TrackingUpdate } from './TrackingUpdate'
 
 export const dynamic = 'force-dynamic'
 
@@ -91,6 +92,7 @@ export default async function CarrierCargasPage() {
                 <TableHead className="text-xs font-semibold text-slate-500">Pago</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500">Fechas</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500">Estado</TableHead>
+                <TableHead className="text-xs font-semibold text-slate-500">Tracking</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -149,6 +151,11 @@ export default async function CarrierCargasPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-xs ${cfg.className}`}>{cfg.label}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {tx.status !== 'completed' && tx.status !== 'cancelled' && (
+                          <TrackingUpdate transactionId={tx.id} referenceNumber={tx.reference_number} />
+                        )}
                       </TableCell>
                     </TableRow>
                   )

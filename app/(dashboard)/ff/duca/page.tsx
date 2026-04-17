@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { FileText, CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
+import { FileText, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +57,13 @@ export default async function FfDucaPage() {
       <Header title="Documentos DUCA" subtitle="Declaración Única Centroamericana" />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5">
+
+        {/* Acción principal */}
+        <div className="flex justify-end">
+          <Link href="/ff/duca/nueva" className="inline-flex items-center gap-2 bg-[#0F1B2D] hover:bg-[#0F1B2D]/80 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+            <Plus size={15} /> Nueva DUCA-T
+          </Link>
+        </div>
 
         {/* Info */}
         <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
