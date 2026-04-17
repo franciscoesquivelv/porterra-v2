@@ -34,11 +34,16 @@ async function getAdminStats(supabase: Awaited<ReturnType<typeof createClient>>)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+
   const [
     { count: totalUsers },
     { count: pendingUsers },
     { data: recentProfiles },
     { data: configs },
+    { data: txThisMonth },
   ] = await Promise.all([
     db.from('profiles').select('*', { count: 'exact', head: true }),
     db.from('profiles').select('*', { count: 'exact', head: true }).eq('porterra_status', 'pending'),
@@ -49,16 +54,27 @@ async function getAdminStats(supabase: Awaited<ReturnType<typeof createClient>>)
     db.from('platform_config')
       .select('key, value')
       .in('key', ['take_rate_pct', 'factoring_discount_rate']) as Promise<{ data: ConfigRow[] | null }>,
+    db.from('transactions')
+      .select('total_amount_usd, porterra_fee_usd, status')
+      .not('status', 'in', '(draft,cancelled)')
+      .gte('created_at', startOfMonth.toISOString()) as Promise<{
+        data: Array<{ total_amount_usd: number; porterra_fee_usd: number; status: string }> | null
+      }>,
   ])
 
   const configMap = Object.fromEntries((configs ?? []).map((c: ConfigRow) => [c.key, c.value]))
+  const txList = txThisMonth ?? []
+  const gmvThisMonth      = txList.reduce((s, t) => s + Number(t.total_amount_usd), 0)
+  const ingresosPorterra  = txList.reduce((s, t) => s + Number(t.porterra_fee_usd ?? 0), 0)
 
   return {
-    totalUsers:     (totalUsers as number | null) ?? 0,
-    pendingUsers:   (pendingUsers as number | null) ?? 0,
-    recentProfiles: (recentProfiles as ProfileRow[]) ?? [],
-    takeRate:       configMap['take_rate_pct'] ?? '2.5',
-    factoringRate:  configMap['factoring_discount_rate'] ?? '3.5',
+    totalUsers:      (totalUsers as number | null) ?? 0,
+    pendingUsers:    (pendingUsers as number | null) ?? 0,
+    recentProfiles:  (recentProfiles as ProfileRow[]) ?? [],
+    takeRate:        configMap['take_rate_pct'] ?? '2.5',
+    factoringRate:   configMap['factoring_discount_rate'] ?? '3.5',
+    gmvThisMonth,
+    ingresosPorterra,
   }
 }
 
@@ -114,7 +130,7 @@ export default async function AdminDashboardPage() {
           />
           <KPICard
             title="GMV este mes"
-            value="$0"
+            value={`$${stats.gmvThisMonth.toLocaleString('en', { maximumFractionDigits: 0 })}`}
             suffix="USD"
             change={0}
             icon={TrendingUp}
@@ -122,7 +138,7 @@ export default async function AdminDashboardPage() {
           />
           <KPICard
             title="Ingresos PORTERRA"
-            value="$0"
+            value={`$${stats.ingresosPorterra.toLocaleString('en', { maximumFractionDigits: 0 })}`}
             suffix="USD"
             change={0}
             icon={ShieldCheck}
