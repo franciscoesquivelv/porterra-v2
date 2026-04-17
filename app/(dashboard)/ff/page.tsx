@@ -24,32 +24,75 @@ interface FfProfileRow {
   is_verified: boolean
 }
 
+const PAIS: Record<string, string> = {
+  GT: 'Guatemala', HN: 'Honduras', SV: 'El Salvador',
+  NI: 'Nicaragua', CR: 'Costa Rica', PA: 'Panamá', MX: 'México',
+}
+
 async function getFfData(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
-  const { data: profile } = await db
-    .from('ff_profiles')
-    .select('company_name, country, credit_limit_usd, is_verified')
-    .eq('user_id', userId)
-    .single() as { data: FfProfileRow | null }
+
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+
+  const [{ data: profile }, { data: transactions }] = await Promise.all([
+    db.from('ff_profiles')
+      .select('company_name, country, credit_limit_usd, is_verified')
+      .eq('user_id', userId)
+      .single() as Promise<{ data: FfProfileRow | null }>,
+
+    db.from('transactions')
+      .select('id, reference_number, status, total_amount_usd, porterra_fee_usd, origin_country, destination_country, created_at, carrier_user_id')
+      .eq('ff_user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(20) as Promise<{ data: Array<{
+        id: string; reference_number: string | null; status: string;
+        total_amount_usd: number; porterra_fee_usd: number | null;
+        origin_country: string; destination_country: string;
+        created_at: string; carrier_user_id: string | null
+      }> | null }>,
+  ])
+
+  const txList = transactions ?? []
+  const activeStatuses = ['published', 'confirmed', 'in_transit', 'delivered']
+
+  const activeTransactions = txList.filter(t => activeStatuses.includes(t.status)).length
+  const gmvThisMonth = txList
+    .filter(t => !['draft', 'cancelled'].includes(t.status) && new Date(t.created_at) >= startOfMonth)
+    .reduce((s, t) => s + Number(t.total_amount_usd), 0)
+  const porterraFee = txList
+    .filter(t => t.status === 'completed' && new Date(t.created_at) >= startOfMonth)
+    .reduce((s, t) => s + Number(t.porterra_fee_usd ?? 0), 0)
+
+  const recentTransactions = txList.slice(0, 5).map(t => ({
+    id:           t.id,
+    codigo:       t.reference_number ?? '—',
+    carrier_name: t.carrier_user_id ? 'Asignado' : '—',
+    origen:       PAIS[t.origin_country]      ?? t.origin_country,
+    destino:      PAIS[t.destination_country] ?? t.destination_country,
+    gmv_total:    Number(t.total_amount_usd),
+    estado:       t.status,
+    created_at:   t.created_at,
+  }))
 
   return {
     profile,
-    stats: { activeTransactions: 0, gmvThisMonth: 0, pendingPayments: 0, porterraFee: 0 },
-    recentTransactions: [] as Array<{
-      id: string; codigo: string; carrier_name: string;
-      origen: string; destino: string; gmv_total: number; estado: string; created_at: string
-    }>,
+    stats: { activeTransactions, gmvThisMonth, pendingPayments: 0, porterraFee },
+    recentTransactions,
   }
 }
 
-const STATUS_TX = {
-  draft:      { label: 'Borrador',   className: 'bg-slate-100 text-slate-500 border-slate-200' },
-  processing: { label: 'En proceso', className: 'bg-blue-100 text-blue-700 border-blue-200' },
-  completed:  { label: 'Completada', className: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  cancelled:  { label: 'Cancelada',  className: 'bg-red-100 text-red-700 border-red-200' },
-  disputed:   { label: 'En disputa', className: 'bg-amber-100 text-amber-700 border-amber-200' },
-} as const
+const STATUS_TX: Record<string, { label: string; className: string }> = {
+  draft:      { label: 'Borrador',    className: 'bg-slate-100 text-slate-500 border-slate-200' },
+  published:  { label: 'Publicada',   className: 'bg-violet-100 text-violet-700 border-violet-200' },
+  confirmed:  { label: 'Confirmada',  className: 'bg-blue-100 text-blue-700 border-blue-200' },
+  in_transit: { label: 'En tránsito', className: 'bg-amber-100 text-amber-700 border-amber-200' },
+  delivered:  { label: 'Entregada',   className: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
+  completed:  { label: 'Completada',  className: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  cancelled:  { label: 'Cancelada',   className: 'bg-red-100 text-red-700 border-red-200' },
+}
 
 export default async function FfDashboardPage() {
   const supabase = await createClient()

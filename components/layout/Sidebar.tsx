@@ -21,6 +21,8 @@ import {
   ShieldCheck,
   ChevronDown,
   LogOut,
+  Shield,
+  Boxes,
 } from 'lucide-react'
 import { logoutAction } from '@/app/actions/auth'
 
@@ -52,10 +54,22 @@ const NAV_ADMIN: NavSection[] = [
     ],
   },
   {
+    section: 'Operaciones',
+    items: [
+      { label: 'Asignación de cargas', href: '/admin/cargas', icon: Boxes },
+    ],
+  },
+  {
     section: 'Financiero',
     items: [
       { label: 'Control financiero', href: '/admin/financiero', icon: TrendingUp },
       { label: 'Factoring', href: '/admin/factoring', icon: Receipt },
+    ],
+  },
+  {
+    section: 'SAT / DGA',
+    items: [
+      { label: 'Revisión aduanera', href: '/admin/sat-dga', icon: Shield },
     ],
   },
   {
@@ -92,6 +106,12 @@ const NAV_FF: NavSection[] = [
     section: 'Financiamiento',
     items: [
       { label: 'Factoraje', href: '/ff/factoraje', icon: Receipt },
+    ],
+  },
+  {
+    section: 'Mi cuenta',
+    items: [
+      { label: 'Perfil y verificación', href: '/ff/perfil', icon: ShieldCheck },
     ],
   },
 ]

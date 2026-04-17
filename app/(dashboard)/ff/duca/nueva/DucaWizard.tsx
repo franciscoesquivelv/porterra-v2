@@ -62,24 +62,74 @@ const selectCls = inputCls + ' cursor-pointer'
 interface Props {
   transactionId: string | null
   txData: { reference_number: string | null; cargo_description: string; origin_country: string; destination_country: string } | null
+  existingDucaId?: string | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  draftData?: Record<string, any> | null
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
-export function DucaWizard({ transactionId, txData }: Props) {
+export function DucaWizard({ transactionId, txData, existingDucaId, draftData }: Props) {
   const router = useRouter()
   const [step, setStep]           = useState(1)
-  const [ducaId, setDucaId]       = useState<string | undefined>(undefined)
+  const [ducaId, setDucaId]       = useState<string | undefined>(existingDucaId ?? undefined)
   const [isPending, startT]       = useTransition()
   const [saveMsg, setSaveMsg]     = useState('')
 
-  // Estado del formulario
-  const [form, setForm] = useState<DucaFormData>({
-    transaction_id:    transactionId ?? undefined,
-    pais_procedencia:  txData?.origin_country      ?? '',
-    pais_destino:      txData?.destination_country ?? '',
-    ruta_transito:     [],
-    mercancias:        [],
+  // Estado del formulario — pre-popular desde borrador si existe
+  const [form, setForm] = useState<DucaFormData>(() => {
+    if (draftData) {
+      return {
+        transaction_id:          draftData.transaction_id        ?? transactionId ?? undefined,
+        pais_procedencia:        draftData.pais_procedencia       ?? txData?.origin_country ?? '',
+        aduana_salida:           draftData.aduana_salida          ?? '',
+        pais_destino:            draftData.pais_destino           ?? txData?.destination_country ?? '',
+        aduana_entrada:          draftData.aduana_entrada         ?? '',
+        aduana_destino:          draftData.aduana_destino         ?? '',
+        exportador_nombre:       draftData.exportador_nombre      ?? '',
+        exportador_pais:         draftData.exportador_pais        ?? '',
+        exportador_doc_tipo:     draftData.exportador_doc_tipo    ?? '',
+        exportador_doc_numero:   draftData.exportador_doc_numero  ?? '',
+        exportador_direccion:    draftData.exportador_direccion   ?? '',
+        importador_nombre:       draftData.importador_nombre      ?? '',
+        importador_pais:         draftData.importador_pais        ?? '',
+        importador_doc_tipo:     draftData.importador_doc_tipo    ?? '',
+        importador_doc_numero:   draftData.importador_doc_numero  ?? '',
+        importador_direccion:    draftData.importador_direccion   ?? '',
+        ruta_transito:           draftData.ruta_transito          ?? [],
+        transportista_codigo:    draftData.transportista_codigo   ?? '',
+        transportista_nombre:    draftData.transportista_nombre   ?? '',
+        transportista_email:     draftData.transportista_email    ?? '',
+        vehiculo_placa:          draftData.vehiculo_placa         ?? '',
+        vehiculo_vin:            draftData.vehiculo_vin           ?? '',
+        vehiculo_motor:          draftData.vehiculo_motor         ?? '',
+        vehiculo_marca:          draftData.vehiculo_marca         ?? '',
+        vehiculo_modelo:         draftData.vehiculo_modelo        ?? '',
+        vehiculo_pais_registro:  draftData.vehiculo_pais_registro ?? '',
+        conductor1_nombre:       draftData.conductor1_nombre      ?? '',
+        conductor1_apellido:     draftData.conductor1_apellido    ?? '',
+        conductor1_doc:          draftData.conductor1_doc         ?? '',
+        conductor1_licencia:     draftData.conductor1_licencia    ?? '',
+        conductor1_pais:         draftData.conductor1_pais        ?? '',
+        conductor2_nombre:       draftData.conductor2_nombre      ?? '',
+        conductor2_apellido:     draftData.conductor2_apellido    ?? '',
+        conductor2_doc:          draftData.conductor2_doc         ?? '',
+        conductor2_licencia:     draftData.conductor2_licencia    ?? '',
+        conductor2_pais:         draftData.conductor2_pais        ?? '',
+        mercancias:              draftData.mercancias             ?? [],
+        valor_transaccion_usd:   draftData.valor_transaccion_usd  ?? undefined,
+        flete_usd:               draftData.flete_usd              ?? undefined,
+        seguro_usd:              draftData.seguro_usd             ?? undefined,
+        otros_cargos_usd:        draftData.otros_cargos_usd       ?? undefined,
+      }
+    }
+    return {
+      transaction_id:    transactionId ?? undefined,
+      pais_procedencia:  txData?.origin_country      ?? '',
+      pais_destino:      txData?.destination_country ?? '',
+      ruta_transito:     [],
+      mercancias:        [],
+    }
   })
 
   // Estado para agregar mercancías

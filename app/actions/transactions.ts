@@ -77,3 +77,107 @@ export async function createTransactionAction(formData: FormData): Promise<Actio
   revalidatePath('/ff/transacciones')
   return { error: '', fieldErrors: {}, success: true }
 }
+
+// ── publishTransactionAction ──────────────────────────────────────────────────
+//
+// El FF terminó de configurar la carga y la publica al mercado de carriers.
+// Una vez publicada, los carriers la pueden ver y aplicar.
+// El FF puede despublicar si todavía no hay carrier asignado.
+//
+export async function publishTransactionAction(
+  transactionId: string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+  if (user.app_metadata?.porterra_role !== 'freight_forwarder')
+    return { error: 'Sin permisos' }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const { error } = await db
+    .from('transactions')
+    .update({ status: 'published' })
+    .eq('id', transactionId)
+    .eq('ff_user_id', user.id)
+    .eq('status', 'draft')   // Solo se puede publicar desde draft
+
+  if (error) return { error: 'Error al publicar la carga' }
+
+  const headersList = await headers()
+  await logAuditEvent({
+    actorUserId:    user.id,
+    actorRole:      'freight_forwarder',
+    actorIp:        headersList.get('x-forwarded-for') ?? 'unknown',
+    actorUserAgent: headersList.get('user-agent') ?? 'unknown',
+    eventType:      'transaction.published',
+    entityType:     'transaction',
+    entityId:       transactionId,
+    metadata:       {},
+  })
+
+  revalidatePath('/ff/transacciones')
+  revalidatePath(`/ff/transacciones/${transactionId}`)
+  return {}
+}
+
+// ── confirmDeliveryAction ─────────────────────────────────────────────────────
+//
+// El FF confirma que recibió la carga correctamente.
+// Esto es el último paso del ciclo: transacción pasa a 'completed' y los
+// payment splits del saldo final se marcan como listos para liberar.
+//
+// Por qué el FF necesita confirmar (no es automático al 'delivered'):
+// Protege al FF ante entregas incorrectas, mercancía dañada o incompleta.
+// En Nuvocargo hay una ventana de 48h. Si el FF no disputa, se auto-confirma.
+// En el prototipo el FF confirma explícitamente.
+//
+export async function confirmDeliveryAction(
+  transactionId: string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+  if (user.app_metadata?.porterra_role !== 'freight_forwarder')
+    return { error: 'Sin permisos' }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  // Solo se puede confirmar si el carrier ya marcó 'delivered'
+  const { error } = await db
+    .from('transactions')
+    .update({ status: 'completed', completed_at: new Date().toISOString() })
+    .eq('id', transactionId)
+    .eq('ff_user_id', user.id)
+    .eq('status', 'delivered')
+
+  if (error) return { error: 'Error al confirmar entrega' }
+
+  // Marcar el split del saldo como listo para liberar
+  // (el anticipo ya debería haberse liberado en el pickup)
+  await db
+    .from('payment_splits')
+    .update({ status: 'released', released_at: new Date().toISOString() })
+    .eq('transaction_id', transactionId)
+    .eq('split_label', 'Saldo final 50%')
+    .eq('status', 'pending')
+
+  const headersList = await headers()
+  await logAuditEvent({
+    actorUserId:    user.id,
+    actorRole:      'freight_forwarder',
+    actorIp:        headersList.get('x-forwarded-for') ?? 'unknown',
+    actorUserAgent: headersList.get('user-agent') ?? 'unknown',
+    eventType:      'transaction.delivery.confirmed',
+    entityType:     'transaction',
+    entityId:       transactionId,
+    metadata:       {},
+  })
+
+  revalidatePath('/ff/transacciones')
+  revalidatePath(`/ff/transacciones/${transactionId}`)
+  revalidatePath('/carrier/pagos')
+  return {}
+}

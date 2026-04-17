@@ -182,6 +182,120 @@ export async function submitDucaAction(ducaId: string): Promise<{ error?: string
   return {}
 }
 
+// ── approveDucaAction (SAT/DGA simulado) ─────────────────────────────────────
+//
+// El admin actúa como el sistema SAT/DGA externo y aprueba una DUCA enviada.
+// Al hacer update a status='approved', el trigger de DB genera el duca_number
+// automáticamente (DUCA-T-YYYY-NNNNN).
+//
+// Por qué esto está en PORTERRA y no en un sistema externo:
+// En producción, PORTERRA conectaría con la API del SIECA/TICA vía webservices.
+// El prototipo simula ese flujo en una sección administrativa separada,
+// claramente marcada como "SAT/DGA", para que sea evidente en el demo que
+// es un sistema externo siendo simulado.
+//
+export async function approveDucaAction(ducaId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+  if (user.app_metadata?.porterra_role !== 'admin')
+    return { error: 'Solo el administrador puede aprobar DUCAs (simulando SAT/DGA)' }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  // Aprobar la DUCA — el trigger genera el duca_number
+  const { data: updated, error } = await db
+    .from('duca_documents')
+    .update({ status: 'approved', approved_at: new Date().toISOString() })
+    .eq('id', ducaId)
+    .eq('status', 'submitted')
+    .select('id, duca_number, transaction_id')
+    .single()
+
+  if (error || !updated) return { error: 'Error al aprobar DUCA o ya fue procesada' }
+
+  // Sincronizar en la transacción para visibilidad del FF
+  if (updated.transaction_id) {
+    await db
+      .from('transactions')
+      .update({
+        duca_status: 'approved',
+        duca_number: updated.duca_number,
+      })
+      .eq('id', updated.transaction_id)
+  }
+
+  const headersList = await headers()
+  await logAuditEvent({
+    actorUserId:    user.id,
+    actorRole:      'admin',
+    actorIp:        headersList.get('x-forwarded-for') ?? 'unknown',
+    actorUserAgent: headersList.get('user-agent') ?? 'unknown',
+    eventType:      'document.duca.approved',
+    entityType:     'duca_document',
+    entityId:       ducaId,
+    metadata:       { duca_number: updated.duca_number, simulated_authority: 'SAT/DGA' },
+  })
+
+  revalidatePath('/admin/sat-dga')
+  revalidatePath('/ff/duca')
+  return {}
+}
+
+// ── rejectDucaAction (SAT/DGA simulado) ──────────────────────────────────────
+//
+// El admin (simulando SAT/DGA) rechaza la DUCA con una razón específica.
+// El FF recibe la razón para corregir y reenviar.
+//
+export async function rejectDucaAction(
+  ducaId: string,
+  reason: string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'No autenticado' }
+  if (user.app_metadata?.porterra_role !== 'admin')
+    return { error: 'Solo el administrador puede rechazar DUCAs (simulando SAT/DGA)' }
+  if (!reason.trim()) return { error: 'Debes indicar el motivo del rechazo' }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const { data: updated, error } = await db
+    .from('duca_documents')
+    .update({ status: 'rejected', rejection_reason: reason })
+    .eq('id', ducaId)
+    .eq('status', 'submitted')
+    .select('id, transaction_id')
+    .single()
+
+  if (error || !updated) return { error: 'Error al rechazar DUCA o ya fue procesada' }
+
+  if (updated.transaction_id) {
+    await db
+      .from('transactions')
+      .update({ duca_status: 'rejected' })
+      .eq('id', updated.transaction_id)
+  }
+
+  const headersList = await headers()
+  await logAuditEvent({
+    actorUserId:    user.id,
+    actorRole:      'admin',
+    actorIp:        headersList.get('x-forwarded-for') ?? 'unknown',
+    actorUserAgent: headersList.get('user-agent') ?? 'unknown',
+    eventType:      'document.duca.rejected',
+    entityType:     'duca_document',
+    entityId:       ducaId,
+    metadata:       { reason, simulated_authority: 'SAT/DGA' },
+  })
+
+  revalidatePath('/admin/sat-dga')
+  revalidatePath('/ff/duca')
+  return {}
+}
+
 // ── Agregar evento de tracking (carrier) ─────────────────────────────────────
 
 export async function addTrackingEventAction(
@@ -221,11 +335,14 @@ export async function addTrackingEventAction(
 
   if (error) return { error: 'Error al registrar evento' }
 
-  // Si el evento es 'delivered', marcar la transacción como completada
+  // Si el evento es 'delivered', marcar la transacción como 'delivered'
+  // (NO 'completed' — eso requiere confirmación del FF)
+  // El carrier dice "entregué", el FF confirma. Hasta que el FF confirme,
+  // el status es 'delivered' y el saldo final no se libera.
   if (eventType === 'delivered') {
     await db
       .from('transactions')
-      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .update({ status: 'delivered' })
       .eq('id', transactionId)
       .eq('carrier_user_id', user.id)
   }

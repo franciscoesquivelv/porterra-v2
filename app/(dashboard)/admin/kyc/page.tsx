@@ -3,12 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/badge'
+import { KycReviewPanel } from './KycReviewPanel'
 import {
   Table, TableBody, TableCell,
   TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { KycActions } from './KycActions'
-import { ShieldCheck, Clock, FileText } from 'lucide-react'
+import { ShieldCheck, Clock, FileText, AlertCircle } from 'lucide-react'
 import type { UserRole, KycStatus } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
@@ -34,10 +34,10 @@ const ROLE_LABEL: Record<UserRole, string> = {
 }
 
 const KYC_CONFIG: Record<KycStatus, { label: string; className: string }> = {
-  not_started: { label: 'Sin iniciar', className: 'bg-slate-100 text-slate-500' },
+  not_started: { label: 'Sin iniciar',        className: 'bg-slate-100 text-slate-500 border-slate-200' },
   submitted:   { label: 'Pendiente revisión', className: 'bg-amber-100 text-amber-700 border-amber-200' },
-  approved:    { label: 'Aprobado',    className: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  rejected:    { label: 'Rechazado',   className: 'bg-red-100 text-red-700 border-red-200' },
+  approved:    { label: 'Aprobado',           className: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  rejected:    { label: 'Rechazado',          className: 'bg-red-100 text-red-700 border-red-200' },
 }
 
 export default async function AdminKycPage() {
@@ -60,11 +60,11 @@ export default async function AdminKycPage() {
   const emailMap: Record<string, string> = {}
   for (const u of authUsers ?? []) emailMap[u.id] = u.email ?? ''
 
-  const allProfiles     = profiles ?? []
-  const pendingKyc      = allProfiles.filter(p => p.kyc_status === 'submitted')
-  const approvedKyc     = allProfiles.filter(p => p.kyc_status === 'approved')
-  const rejectedKyc     = allProfiles.filter(p => p.kyc_status === 'rejected')
-  const notStartedKyc   = allProfiles.filter(p => p.kyc_status === 'not_started')
+  const allProfiles    = profiles ?? []
+  const pendingKyc     = allProfiles.filter(p => p.kyc_status === 'submitted')
+  const approvedKyc    = allProfiles.filter(p => p.kyc_status === 'approved')
+  const rejectedKyc    = allProfiles.filter(p => p.kyc_status === 'rejected')
+  const notStartedKyc  = allProfiles.filter(p => p.kyc_status === 'not_started')
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -78,15 +78,13 @@ export default async function AdminKycPage() {
         {/* KPI cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Pendientes',    value: pendingKyc.length,    icon: Clock,        color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-100' },
-            { label: 'Aprobados',     value: approvedKyc.length,   icon: ShieldCheck,  color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
-            { label: 'Rechazados',    value: rejectedKyc.length,   icon: FileText,     color: 'text-red-500',     bg: 'bg-red-50',     border: 'border-red-100' },
-            { label: 'Sin documentos',value: notStartedKyc.length, icon: FileText,     color: 'text-slate-400',   bg: 'bg-slate-50',   border: 'border-slate-100' },
+            { label: 'Pendientes',     value: pendingKyc.length,    icon: Clock,        color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-100' },
+            { label: 'Aprobados',      value: approvedKyc.length,   icon: ShieldCheck,  color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+            { label: 'Rechazados',     value: rejectedKyc.length,   icon: AlertCircle,  color: 'text-red-500',     bg: 'bg-red-50',     border: 'border-red-100' },
+            { label: 'Sin documentos', value: notStartedKyc.length, icon: FileText,     color: 'text-slate-400',   bg: 'bg-slate-50',   border: 'border-slate-100' },
           ].map(({ label, value, icon: Icon, color, bg, border }) => (
             <div key={label} className={`${bg} border ${border} rounded-xl p-4 flex items-center gap-4`}>
-              <div className={`${color} shrink-0`}>
-                <Icon size={22} />
-              </div>
+              <div className={`${color} shrink-0`}><Icon size={22} /></div>
               <div>
                 <p className="text-2xl font-bold text-[#1A1A2E]">{value}</p>
                 <p className="text-xs text-slate-500 mt-0.5">{label}</p>
@@ -95,17 +93,30 @@ export default async function AdminKycPage() {
           ))}
         </div>
 
-        {/* Alerta pendientes */}
+        {/* ── PENDIENTES DE REVISIÓN ── tarjetas expandibles */}
         {pendingKyc.length > 0 && (
-          <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <Clock size={15} className="text-amber-600 shrink-0" />
-            <p className="text-sm text-amber-800">
-              <strong>{pendingKyc.length} usuario{pendingKyc.length > 1 ? 's' : ''}</strong> enviaron documentos y esperan verificación.
-            </p>
+          <div>
+            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+              <Clock size={15} className="text-amber-600 shrink-0" />
+              <p className="text-sm text-amber-800">
+                <strong>{pendingKyc.length} usuario{pendingKyc.length > 1 ? 's' : ''}</strong>{' '}
+                enviaron información KYC y esperan revisión.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {pendingKyc.map(p => (
+                <KycReviewPanel
+                  key={p.user_id}
+                  profile={p}
+                  email={emailMap[p.user_id] ?? ''}
+                />
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Tabla principal */}
+        {/* ── TODOS LOS USUARIOS ── tabla resumen */}
         <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
             <h2 className="text-sm font-semibold text-[#1A1A2E]">Todos los usuarios</h2>
@@ -119,13 +130,12 @@ export default async function AdminKycPage() {
                 <TableHead className="text-xs font-semibold text-slate-500">Tipo</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500">Estado KYC</TableHead>
                 <TableHead className="text-xs font-semibold text-slate-500">Registro</TableHead>
-                <TableHead className="text-xs font-semibold text-slate-500">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {allProfiles.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-slate-400 text-sm py-16">
+                  <TableCell colSpan={5} className="text-center text-slate-400 text-sm py-16">
                     No hay usuarios registrados aún
                   </TableCell>
                 </TableRow>
@@ -138,9 +148,6 @@ export default async function AdminKycPage() {
                         <p className="text-sm font-medium text-[#1A1A2E]">{profile.pii_full_name}</p>
                         {emailMap[profile.user_id] && (
                           <p className="text-xs text-[#06B6D4] mt-0.5">{emailMap[profile.user_id]}</p>
-                        )}
-                        {profile.pii_phone && (
-                          <p className="text-xs text-slate-400 mt-0.5">{profile.pii_phone}</p>
                         )}
                       </TableCell>
                       <TableCell>
@@ -161,13 +168,6 @@ export default async function AdminKycPage() {
                         {new Date(profile.created_at).toLocaleDateString('es', {
                           day: '2-digit', month: 'short', year: 'numeric',
                         })}
-                      </TableCell>
-                      <TableCell>
-                        <KycActions
-                          userId={profile.user_id}
-                          currentKyc={profile.kyc_status}
-                          userName={profile.pii_full_name}
-                        />
                       </TableCell>
                     </TableRow>
                   )

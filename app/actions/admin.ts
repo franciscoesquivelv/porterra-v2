@@ -66,6 +66,24 @@ export async function updateUserStatusAction(
     metadata:       { new_status: newStatus },
   })
 
+  // Si el admin activa la cuenta de un carrier, también lo marca como verificado.
+  // En producción esto sería un paso separado (verificación de documentos físicos),
+  // pero para el prototipo la aprobación de cuenta implica verificación.
+  if (newStatus === 'active') {
+    const { data: profile } = await db()
+      .from('profiles')
+      .select('porterra_role')
+      .eq('user_id', targetUserId)
+      .single()
+
+    if (profile?.porterra_role === 'carrier') {
+      await db()
+        .from('carrier_profiles')
+        .update({ is_verified: true, verification_date: new Date().toISOString() })
+        .eq('user_id', targetUserId)
+    }
+  }
+
   revalidatePath('/admin/usuarios')
   revalidatePath('/admin')
 
@@ -90,23 +108,31 @@ export async function updateKycStatusAction(
   const ip = headersList.get('x-forwarded-for') ?? 'unknown'
   const ua = headersList.get('user-agent') ?? 'unknown'
 
+  // Primero leer metadata existente para no borrar datos del formulario KYC
+  const { data: existing } = await db()
+    .from('profiles')
+    .select('metadata')
+    .eq('user_id', targetUserId)
+    .single() as { data: { metadata: Record<string, string> | null } | null }
+
+  const mergedMeta = {
+    ...(existing?.metadata ?? {}),
+    ...(notes ? {
+      kyc_notes:       notes,
+      kyc_reviewed_by: user.id,
+      kyc_reviewed_at: new Date().toISOString(),
+    } : {
+      kyc_reviewed_by: user.id,
+      kyc_reviewed_at: new Date().toISOString(),
+    }),
+  }
+
   const { error } = await db()
     .from('profiles')
-    .update({
-      kyc_status: newKycStatus,
-      metadata: db().rpc ? undefined : undefined, // handled below
-    })
+    .update({ kyc_status: newKycStatus, metadata: mergedMeta })
     .eq('user_id', targetUserId)
 
   if (error) return { error: 'Error al actualizar KYC' }
-
-  // Guardar notas en metadata si las hay
-  if (notes) {
-    await db()
-      .from('profiles')
-      .update({ metadata: { kyc_notes: notes, kyc_reviewed_by: user.id, kyc_reviewed_at: new Date().toISOString() } })
-      .eq('user_id', targetUserId)
-  }
 
   await logAuditEvent({
     actorUserId:    user.id,

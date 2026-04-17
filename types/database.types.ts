@@ -132,6 +132,12 @@ export type AuditEventType =
   | 'admin.user.suspended'
   | 'document.duca.generated'
   | 'document.duca.sent'
+  | 'document.duca.approved'
+  | 'document.duca.rejected'
+  | 'transaction.published'
+  | 'transaction.delivery.confirmed'
+  | 'load.application.created'
+  | 'load.carrier.assigned'
 
 // ─── PLATFORM CONFIG ──────────────────────────────────────────────────────────
 
