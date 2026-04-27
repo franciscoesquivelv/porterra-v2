@@ -114,7 +114,7 @@ export function DucaReviewPanel({ duca, paisLabel, rejectionReasons }: Props) {
         <>
           {/* Resumen de la DUCA */}
           <div className="px-5 pb-4 space-y-4 border-t border-amber-100">
-            <div className="grid grid-cols-2 gap-4 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
               <div className="bg-slate-50 rounded-lg p-3">
                 <p className="text-[10px] text-slate-400 uppercase tracking-wide font-medium mb-1">Exportador</p>
                 <p className="text-sm font-medium text-[#1A1A2E]">{duca.exportador_nombre ?? '—'}</p>

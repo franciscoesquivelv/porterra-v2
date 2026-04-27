@@ -20,14 +20,26 @@ export const metadata: Metadata = {
     template: '%s · PORTERRA',
   },
   description: 'Infraestructura de pagos para logística en Centroamérica.',
-  robots: { index: false, follow: false }, // No indexar — app privada
+  robots: { index: false, follow: false },
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'PORTERRA',
+  },
+  icons: {
+    apple: '/apple-touch-icon.png',
+    icon:  '/icon-512.png',
+  },
 }
 
 export const viewport: Viewport = {
   themeColor: '#0F1B2D',
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

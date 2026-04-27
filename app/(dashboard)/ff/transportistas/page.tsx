@@ -48,7 +48,7 @@ export default async function FfTransportistasPage() {
       <div className="flex-1 overflow-y-auto p-6 space-y-5">
 
         {/* KPIs */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: 'Total en red',  value: all.length,      icon: Truck,       color: 'text-[#06B6D4]',    bg: 'bg-cyan-50',    border: 'border-cyan-100' },
             { label: 'Verificados',   value: verified,         icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },

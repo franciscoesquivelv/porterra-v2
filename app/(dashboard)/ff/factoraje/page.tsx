@@ -66,7 +66,7 @@ export default async function FfFactorajePage() {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: 'Total adelantado',  value: `$${totalNet.toLocaleString('en', { minimumFractionDigits: 2 })}`, suffix: 'USD', icon: Receipt,     color: 'text-[#06B6D4]',    bg: 'bg-cyan-50',    border: 'border-cyan-100' },
             { label: 'En revisión',       value: pending.toString(),                                                  suffix: '',    icon: Clock,       color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-100' },

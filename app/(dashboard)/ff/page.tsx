@@ -216,7 +216,7 @@ export default async function FfDashboardPage() {
         </div>
 
         {/* Accesos rápidos */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { title: 'Solicitar factoraje', desc: 'Adelanto sobre facturas pendientes', href: '/ff/factoraje', color: '#06B6D4' },
             { title: 'Generar DUCA', desc: 'Documentación aduanera digital', href: '/ff/duca', color: '#8b5cf6' },

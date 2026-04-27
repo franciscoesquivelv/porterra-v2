@@ -167,7 +167,7 @@ export default async function TransaccionDetallePage({ params }: PageProps) {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
 
           {/* Columna principal */}
           <div className="col-span-2 space-y-5">
@@ -175,7 +175,7 @@ export default async function TransaccionDetallePage({ params }: PageProps) {
             {/* Info básica */}
             <div className="bg-white rounded-xl border border-slate-100 p-5">
               <h2 className="text-sm font-semibold text-[#1A1A2E] mb-4">Detalle de la carga</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { label: 'Ruta', value: `${PAIS_LABEL[tx.origin_country] ?? tx.origin_country} → ${PAIS_LABEL[tx.destination_country] ?? tx.destination_country}`, icon: MapPin },
                   { label: 'Tipo de carga', value: tx.cargo_type, icon: Package },

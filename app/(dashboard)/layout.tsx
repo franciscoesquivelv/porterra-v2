@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/layout/Sidebar'
+import DashboardShell from '@/components/layout/DashboardShell'
 import type { UserRole } from '@/types/database.types'
 
 interface ProfileRow {
@@ -34,15 +34,12 @@ export default async function DashboardLayout({
   const role = profile.porterra_role as UserRole
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Sidebar
-        role={role}
-        userName={profile.pii_full_name}
-        userEmail={user.email ?? ''}
-      />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {children}
-      </main>
-    </div>
+    <DashboardShell
+      role={role}
+      userName={profile.pii_full_name}
+      userEmail={user.email ?? ''}
+    >
+      {children}
+    </DashboardShell>
   )
 }

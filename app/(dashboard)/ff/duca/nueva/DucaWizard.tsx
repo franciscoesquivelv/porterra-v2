@@ -205,7 +205,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
         <div className="space-y-5">
           <div className="bg-slate-50 rounded-xl p-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">País y aduana de inicio</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="País de procedencia" required>
                 <select className={selectCls} value={form.pais_procedencia ?? ''} onChange={e => set('pais_procedencia', e.target.value)}>
                   <option value="">– Seleccionar –</option>
@@ -228,7 +228,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
           </div>
           <div className="bg-slate-50 rounded-xl p-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">País y aduana de destino</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="País de destino" required>
                 <select className={selectCls} value={form.pais_destino ?? ''} onChange={e => set('pais_destino', e.target.value)}>
                   <option value="">– Seleccionar –</option>
@@ -259,7 +259,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
       case 2: return (
         <div className="space-y-3">
           <p className="text-xs text-slate-500">Información del exportador o proveedor de las mercancías.</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="col-span-2">
               <Field label="Nombre o razón social" required>
                 <input className={inputCls} placeholder="Empresa Exportadora S.A." value={form.exportador_nombre ?? ''} onChange={e => set('exportador_nombre', e.target.value)} />
@@ -295,7 +295,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
       case 3: return (
         <div className="space-y-3">
           <p className="text-xs text-slate-500">Información del importador o destinatario de las mercancías en el país de destino.</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="col-span-2">
               <Field label="Nombre o razón social" required>
                 <input className={inputCls} placeholder="Empresa Importadora S.A." value={form.importador_nombre ?? ''} onChange={e => set('importador_nombre', e.target.value)} />
@@ -355,7 +355,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
           {/* Agregar parada */}
           <div className="bg-white border border-dashed border-slate-200 rounded-xl p-4">
             <p className="text-xs font-semibold text-slate-500 mb-3">Agregar aduana de paso</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="País">
                 <select className={selectCls} value={newStop.pais} onChange={e => setNewStop(s => ({ ...s, pais: e.target.value, aduana: '' }))}>
                   {PAISES.map(p => <option key={p} value={p}>{PAIS_LABEL[p]}</option>)}
@@ -380,7 +380,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
         <div className="space-y-4">
           <div className="bg-slate-50 rounded-xl p-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Transportista autorizado</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Código de transportista">
                 <input className={inputCls} placeholder="Código SIECA" value={form.transportista_codigo ?? ''} onChange={e => set('transportista_codigo', e.target.value)} />
               </Field>
@@ -396,7 +396,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
           </div>
           <div className="bg-slate-50 rounded-xl p-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Unidad de transporte</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Placa" required>
                 <input className={inputCls} placeholder="P-123-GT" value={form.vehiculo_placa ?? ''} onChange={e => set('vehiculo_placa', e.target.value)} />
               </Field>
@@ -427,7 +427,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
       case 6: return (
         <div className="space-y-3">
           <p className="text-xs text-slate-500">Datos del piloto o conductor de la unidad de transporte.</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Primer nombre" required>
               <input className={inputCls} placeholder="Primer nombre" value={form.conductor_primer_nombre ?? ''} onChange={e => set('conductor_primer_nombre', e.target.value)} />
             </Field>
@@ -490,7 +490,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
           {/* Formulario nueva mercancía */}
           <div className="bg-white border border-dashed border-slate-200 rounded-xl p-4">
             <p className="text-xs font-semibold text-slate-500 mb-3">Agregar mercancía</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Código arancelario SAC" required>
                 <input className={inputCls} placeholder="ej. 6204.62" value={newItem.codigo_sac} onChange={e => setNewItem(n => ({ ...n, codigo_sac: e.target.value }))} />
               </Field>
@@ -527,7 +527,7 @@ export function DucaWizard({ transactionId, txData, existingDucaId, draftData }:
           {/* Valores totales */}
           <div className="bg-slate-50 rounded-xl p-4">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Valores totales (USD)</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Valor de transacción">
                 <input className={inputCls} type="number" min="0" step="0.01" placeholder="0.00" value={form.valor_transaccion ?? ''} onChange={e => set('valor_transaccion', Number(e.target.value))} />
               </Field>

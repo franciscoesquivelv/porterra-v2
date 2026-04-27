@@ -117,7 +117,7 @@ export default async function FfPerfilPage() {
             <Shield size={15} className="text-[#06B6D4]" />
             <h2 className="text-sm font-semibold text-[#1A1A2E]">¿Qué verificamos?</h2>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { title: 'Identidad legal', desc: 'Nombre y número de la empresa registrada' },
               { title: 'Número fiscal', desc: 'RTN, NIT o RUC según el país' },

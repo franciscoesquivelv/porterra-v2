@@ -140,7 +140,7 @@ export default async function AdminCargasPage() {
       <div className="flex-1 overflow-y-auto p-6 space-y-5">
 
         {/* KPIs */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: 'Cargas publicadas', value: loadList.length,        icon: Package, color: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-100' },
             { label: 'Aplicaciones pend.', value: totalPendingApps,      icon: Users,   color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-100' },

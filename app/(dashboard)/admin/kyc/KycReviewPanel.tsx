@@ -117,7 +117,7 @@ export function KycReviewPanel({ profile, email }: Props) {
             {/* Empresa */}
             <div className="bg-slate-50 rounded-xl p-4 space-y-3">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Empresa</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <DataField icon={Building2} label="Razón social" value={meta.company_legal_name} />
                 <DataField icon={Hash} label="Número fiscal" value={meta.tax_id} />
                 <DataField icon={Globe} label="País de emisión" value={meta.tax_id_country ? (PAIS[meta.tax_id_country] ?? meta.tax_id_country) : undefined} />
@@ -128,7 +128,7 @@ export function KycReviewPanel({ profile, email }: Props) {
             {/* Representante legal */}
             <div className="bg-slate-50 rounded-xl p-4 space-y-3">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Representante legal</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <DataField icon={User} label="Nombre completo" value={meta.legal_rep_name} />
                 <DataField icon={CreditCard} label="Número de identificación" value={meta.legal_rep_id} />
               </div>

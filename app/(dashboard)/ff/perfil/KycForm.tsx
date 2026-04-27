@@ -107,7 +107,7 @@ export function KycForm({ kycStatus, defaultValues }: Props) {
               onChange={e => set('company_legal_name', e.target.value)}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Número fiscal" required hint="RTN, NIT, RUC según tu país">
               <input
                 className={inputCls}

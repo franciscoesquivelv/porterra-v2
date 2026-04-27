@@ -103,7 +103,7 @@ export default async function AdminFinancieroPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
 
           {/* Transacciones recientes */}
           <div className="col-span-2 bg-white rounded-xl border border-slate-100 overflow-hidden">

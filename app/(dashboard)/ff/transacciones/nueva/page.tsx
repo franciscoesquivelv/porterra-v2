@@ -78,7 +78,7 @@ export default function NuevaTransaccionPage() {
               <FieldError error={fe.cargo_description} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="cargo_type" className="text-sm font-medium text-slate-700">Tipo de carga</Label>
                 <select id="cargo_type" name="cargo_type" className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#06B6D4]">
@@ -92,7 +92,7 @@ export default function NuevaTransaccionPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="cargo_weight_kg" className="text-sm font-medium text-slate-700">Peso (kg) <span className="text-slate-400 font-normal">(opcional)</span></Label>
                 <Input id="cargo_weight_kg" name="cargo_weight_kg" type="number" min="0" step="0.1" placeholder="1500" className="h-10 border-slate-200" />
@@ -107,7 +107,7 @@ export default function NuevaTransaccionPage() {
           {/* Ruta */}
           <div className="bg-white rounded-xl border border-slate-100 p-5 space-y-4">
             <h2 className="text-sm font-semibold text-[#1A1A2E]">Ruta</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="origin_country" className="text-sm font-medium text-slate-700">País de origen</Label>
                 <select id="origin_country" name="origin_country" required className="w-full h-10 px-3 rounded-md border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#06B6D4]">
@@ -125,7 +125,7 @@ export default function NuevaTransaccionPage() {
                 <FieldError error={fe.destination_country} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="origin_address" className="text-sm font-medium text-slate-700">Dirección de recogida <span className="text-slate-400 font-normal">(opcional)</span></Label>
                 <Input id="origin_address" name="origin_address" placeholder="Bodega Zona 12, Guatemala" className="h-10 border-slate-200" />
@@ -140,7 +140,7 @@ export default function NuevaTransaccionPage() {
           {/* Fechas */}
           <div className="bg-white rounded-xl border border-slate-100 p-5 space-y-4">
             <h2 className="text-sm font-semibold text-[#1A1A2E]">Fechas <span className="text-slate-400 font-normal text-xs">(opcionales)</span></h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="pickup_date" className="text-sm font-medium text-slate-700">Fecha de recogida</Label>
                 <Input id="pickup_date" name="pickup_date" type="date" className="h-10 border-slate-200" />

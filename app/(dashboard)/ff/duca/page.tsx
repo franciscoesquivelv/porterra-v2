@@ -151,7 +151,7 @@ export default async function FfDucaPage({ searchParams }: PageProps) {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: 'Aprobadas',    value: approvedCount,  icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
             { label: 'En revisión',  value: submittedCount, icon: Clock,       color: 'text-blue-600',    bg: 'bg-blue-50',    border: 'border-blue-100' },

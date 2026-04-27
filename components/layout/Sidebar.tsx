@@ -163,14 +163,22 @@ interface SidebarProps {
   role: UserRole
   userName: string
   userEmail: string
+  mobileOpen?: boolean
 }
 
-export function Sidebar({ role, userName, userEmail }: SidebarProps) {
+export function Sidebar({ role, userName, userEmail, mobileOpen = false }: SidebarProps) {
   const pathname = usePathname()
   const nav = NAV_BY_ROLE[role]
 
   return (
-    <aside className="flex flex-col w-64 min-h-screen bg-[#0F1B2D] text-white shrink-0">
+    <aside className={[
+      'fixed left-0 top-0 h-screen w-64 flex flex-col z-40 shrink-0',
+      'transition-transform duration-300 ease-in-out',
+      mobileOpen ? 'translate-x-0' : '-translate-x-full',
+      'md:translate-x-0',
+    ].join(' ')}
+    style={{ backgroundColor: '#0F1B2D', color: 'white' }}
+    >
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
         <div className="w-8 h-8 rounded-lg bg-[#06B6D4] flex items-center justify-center shrink-0">
@@ -233,8 +241,8 @@ export function Sidebar({ role, userName, userEmail }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Usuario + Logout */}
-      <div className="px-3 py-4 border-t border-white/10 space-y-1">
+      {/* Usuario + Logout — extra pb on mobile so bottom nav doesn't overlap */}
+      <div className="px-3 pt-4 pb-20 md:pb-4 border-t border-white/10 space-y-1">
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
           <div className="w-8 h-8 rounded-full bg-[#06B6D4]/20 border border-[#06B6D4]/30 flex items-center justify-center shrink-0">
             <span className="text-[#06B6D4] text-sm font-bold">
