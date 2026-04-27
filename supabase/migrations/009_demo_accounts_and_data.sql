@@ -88,6 +88,10 @@ BEGIN
   DELETE FROM public.transactions
     WHERE ff_user_id IN (v_ff1, v_ff2);
 
+  -- Limpiar DUCAs con números hardcodeados que puedan existir de seeds anteriores
+  DELETE FROM public.duca_documents
+    WHERE duca_number IN ('DUCA-T-2026-00001','DUCA-T-2026-00002','DUCA-T-2026-00003');
+
   -- Limpiar perfiles
   DELETE FROM public.ff_profiles      WHERE user_id IN (v_ff1, v_ff2);
   DELETE FROM public.carrier_profiles WHERE user_id IN (v_c1,v_c2,v_c3,v_c4,v_c5,v_c6);
