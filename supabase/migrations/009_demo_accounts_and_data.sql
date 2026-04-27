@@ -294,7 +294,7 @@ BEGIN
      'NI', 'GT', NULL, NULL,
      33500.00, 26800.00,
      NULL, NULL,
-     now()-interval '18 days', now()-interval '22 days');
+     NULL, now()-interval '18 days', now()-interval '22 days');
 
   -- ══════════════════════════════════════════════════════════════════════════
   -- TRANSACCIONES — FF2: TransCargo El Salvador
@@ -364,7 +364,7 @@ BEGIN
      'Calzado y accesorios de cuero — lote exportación', 'general', 4200, 24.0,
      'SV', 'CR', NULL, NULL,
      19800.00, 15840.00,
-     NULL, now());
+     NULL, NULL, NULL, now());
 
   -- ══════════════════════════════════════════════════════════════════════════
   -- PAYMENT SPLITS
